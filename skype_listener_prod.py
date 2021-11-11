@@ -42,20 +42,23 @@ class SkypePing(SkypeEventLoop):
     def onEvent(self, event):
 
 
-        if isinstance(event, SkypeNewMessageEvent) and not event.msg.userId == self.userId:
-            #print event.msg.chatId #uncomment to get chatId
+        if (
+            not isinstance(event, SkypeNewMessageEvent)
+            or event.msg.userId == self.userId
+        ):
+            return
+        #print event.msg.chatId #uncomment to get chatId
 
-            logger.info("Msg from chatId = " + event.msg.chatId)
-            if event.msg.chatId==clusterChat:
-         
+        logger.info("Msg from chatId = " + event.msg.chatId)
+        if event.msg.chatId==clusterChat:
             #print event.msg.raw["imdisplayname"]+' via Skype: '+event.msg.content
-                msgstr = '*' +remove_html_tags(event.msg.raw["imdisplayname"].encode('utf-8'))+' via Skype* '+remove_html_tags(event.msg.content.encode('utf-8'))
-                if mode=="Slack":
-                    r = requests.post(slackUrl,data='{ "text": "'+ msgstr +  '" }')
-                    logger.info(msgstr + '#slack resp: ' + r.content)
-                if mode=="Telegram":
-                    r = requests.post(telegramUrl,data='{"text":"'+msgstr+ '", "chat_id":"'+telegramChatId+'", "parse_mode":"Markdown"}')
-                    logger.info(msgstr + '#slack resp: ' + r.content)
+            msgstr = '*' +remove_html_tags(event.msg.raw["imdisplayname"].encode('utf-8'))+' via Skype* '+remove_html_tags(event.msg.content.encode('utf-8'))
+            if mode=="Slack":
+                r = requests.post(slackUrl,data='{ "text": "'+ msgstr +  '" }')
+                logger.info(msgstr + '#slack resp: ' + r.content)
+            if mode=="Telegram":
+                r = requests.post(telegramUrl,data='{"text":"'+msgstr+ '", "chat_id":"'+telegramChatId+'", "parse_mode":"Markdown"}')
+                logger.info(msgstr + '#slack resp: ' + r.content)
 
 
 lp= SkypePing();
